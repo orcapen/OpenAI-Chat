@@ -445,14 +445,32 @@ function updateMessages() {
         `;
     }).join('');
     
-    // 滾動到底部
-    scrollToBottom();
+    // 強制滾動到底部（載入對話或重新渲染時）
+    scrollToBottom(true);
+}
+
+/**
+ * 判斷用戶是否在聊天區域底部附近
+ * @param {number} threshold - 距離底部的閾值（像素），預設 100
+ * @returns {boolean} 是否接近底部
+ */
+function isNearBottom(threshold = 100) {
+    const container = DOM.chatContainer;
+    const scrollPosition = container.scrollTop + container.clientHeight;
+    const scrollHeight = container.scrollHeight;
+    return (scrollHeight - scrollPosition) <= threshold;
 }
 
 /**
  * 滾動聊天區域到底部
+ * @param {boolean} force - 是否強制捲動（忽略用戶位置）
  */
-function scrollToBottom() {
+function scrollToBottom(force = false) {
+    // 如果不是強制捲動，只有在用戶接近底部時才自動捲動
+    if (!force && !isNearBottom()) {
+        console.log('[UI] 用戶正在閱讀上方內容，跳過自動捲動');
+        return;
+    }
     DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
 }
 
@@ -1070,7 +1088,8 @@ function addTypingIndicator() {
         </div>
     `;
     DOM.messages.appendChild(indicator);
-    scrollToBottom();
+    // 強制滾動到底部（開始生成時）
+    scrollToBottom(true);
 }
 
 /**

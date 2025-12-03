@@ -3,7 +3,7 @@
  * 提供離線快取和 PWA 功能
  */
 
-const CACHE_NAME = 'ai-chat-studio-v2';
+const CACHE_NAME = 'ai-chat-studio-v2.0.1';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
