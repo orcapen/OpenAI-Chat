@@ -124,6 +124,12 @@
             
             <!-- 聊天訊息區 -->
             <div class="chat-container" id="chatContainer">
+                <!-- 捲動到底部浮動按鈕 -->
+                <button class="scroll-to-bottom-btn" id="scrollToBottomBtn" title="捲動到底部">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
                 <div class="welcome-screen" id="welcomeScreen">
                     <div class="welcome-icon">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -165,7 +171,7 @@
                 <div class="input-wrapper">
                     <textarea 
                         id="messageInput" 
-                        placeholder="輸入訊息... (Shift + Enter 換行)"
+                        placeholder="輸入訊息..."
                         rows="1"
                     ></textarea>
                     <button class="btn-send" id="sendBtn" disabled>

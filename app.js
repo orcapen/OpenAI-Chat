@@ -445,8 +445,8 @@ function updateMessages() {
         `;
     }).join('');
     
-    // 強制滾動到底部（載入對話或重新渲染時）
-    scrollToBottom(true);
+    // 更新捲動按鈕顯示狀態
+    updateScrollToBottomButton();
 }
 
 /**
@@ -462,16 +462,28 @@ function isNearBottom(threshold = 100) {
 }
 
 /**
- * 滾動聊天區域到底部
- * @param {boolean} force - 是否強制捲動（忽略用戶位置）
+ * 滾動聊天區域到底部（平滑捲動）
  */
-function scrollToBottom(force = false) {
-    // 如果不是強制捲動，只有在用戶接近底部時才自動捲動
-    if (!force && !isNearBottom()) {
-        console.log('[UI] 用戶正在閱讀上方內容，跳過自動捲動');
-        return;
+function scrollToBottom() {
+    DOM.chatContainer.scrollTo({
+        top: DOM.chatContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+/**
+ * 更新「捲動到底部」浮動按鈕的顯示狀態
+ */
+function updateScrollToBottomButton() {
+    const btn = document.getElementById('scrollToBottomBtn');
+    if (!btn) return;
+    
+    // 如果不在底部附近，顯示按鈕
+    if (!isNearBottom(150)) {
+        btn.classList.add('visible');
+    } else {
+        btn.classList.remove('visible');
     }
-    DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
 }
 
 /**
@@ -1047,7 +1059,8 @@ function updateStreamingContent(element, content) {
     // 使用 requestAnimationFrame 優化渲染效能
     requestAnimationFrame(() => {
         element.innerHTML = parseMarkdown(content);
-        scrollToBottom();
+        // 更新捲動按鈕顯示狀態（不自動捲動）
+        updateScrollToBottomButton();
     });
 }
 
@@ -1088,8 +1101,8 @@ function addTypingIndicator() {
         </div>
     `;
     DOM.messages.appendChild(indicator);
-    // 強制滾動到底部（開始生成時）
-    scrollToBottom(true);
+    // 更新捲動按鈕顯示狀態
+    updateScrollToBottomButton();
 }
 
 /**
@@ -1438,6 +1451,20 @@ function initEventListeners() {
             createNewChat();
         }
     });
+    
+    // 聊天區域捲動事件 - 控制「捲動到底部」按鈕顯示
+    DOM.chatContainer.addEventListener('scroll', () => {
+        updateScrollToBottomButton();
+    });
+    
+    // 「捲動到底部」按鈕點擊事件
+    const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
+    if (scrollToBottomBtn) {
+        scrollToBottomBtn.addEventListener('click', () => {
+            console.log('[UI] 用戶點擊捲動到底部按鈕');
+            scrollToBottom();
+        });
+    }
 }
 
 // ===================================

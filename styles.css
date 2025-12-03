@@ -368,6 +368,56 @@ body {
     padding: var(--spacing-lg);
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+/* 捲動到底部浮動按鈕 */
+.scroll-to-bottom-btn {
+    position: sticky;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    align-self: center;
+    z-index: 50;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-lg);
+    
+    color: var(--text-secondary);
+    cursor: pointer;
+    
+    /* 預設隱藏 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    
+    transition: all var(--transition-normal);
+}
+
+.scroll-to-bottom-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-500);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-glow);
+}
+
+.scroll-to-bottom-btn:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+/* 顯示狀態 */
+.scroll-to-bottom-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* 歡迎畫面 */
