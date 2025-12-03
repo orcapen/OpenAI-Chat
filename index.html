@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OpenAI Chatbot PWA - 自訂 API Key 與 Prompt 的智慧助手">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- PWA 相關 -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    
+    <title>AI Chat Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 側邊欄 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">AI Chat Studio</h1>
+                <button class="btn-icon" id="closeSidebar" aria-label="關閉側邊欄">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <button class="btn-primary new-chat-btn" id="newChatBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                新對話
+            </button>
+            
+            <!-- 對話歷史 -->
+            <div class="chat-history">
+                <h3 class="section-title">對話記錄</h3>
+                <div class="chat-list" id="chatList">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+            
+            <!-- 常用 Prompt -->
+            <div class="saved-prompts">
+                <h3 class="section-title">
+                    常用 Prompt
+                    <button class="btn-icon-small" id="addPromptBtn" title="新增 Prompt">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </h3>
+                <div class="prompt-list" id="promptList">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+            
+            <!-- 設定按鈕 -->
+            <div class="sidebar-footer">
+                <button class="btn-settings" id="settingsBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    設定
+                </button>
+            </div>
+        </aside>
+        
+        <!-- 主要聊天區域 -->
+        <main class="main-content">
+            <header class="main-header">
+                <button class="btn-icon" id="menuBtn" aria-label="開啟選單">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="model-selector">
+                    <select id="modelSelect">
+                        <optgroup label="GPT-5 系列">
+                            <option value="gpt-5.1">GPT-5.1</option>
+                            <option value="gpt-5.1-mini">GPT-5.1 Mini</option>
+                            <option value="gpt-5">GPT-5</option>
+                            <option value="gpt-5-mini">GPT-5 Mini</option>
+                        </optgroup>
+                        <optgroup label="GPT-4 系列">
+                            <option value="gpt-4.1">GPT-4.1</option>
+                            <option value="gpt-4o">GPT-4o</option>
+                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="gpt-4">GPT-4</option>
+                        </optgroup>
+                        <optgroup label="其他模型">
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="o1-preview">o1-preview</option>
+                            <option value="o1-mini">o1-mini</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button class="btn-icon" id="paramBtn" aria-label="參數設定" title="調整參數">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="21" x2="4" y2="14"></line>
+                        <line x1="4" y1="10" x2="4" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12" y2="3"></line>
+                        <line x1="20" y1="21" x2="20" y2="16"></line>
+                        <line x1="20" y1="12" x2="20" y2="3"></line>
+                        <line x1="1" y1="14" x2="7" y2="14"></line>
+                        <line x1="9" y1="8" x2="15" y2="8"></line>
+                        <line x1="17" y1="16" x2="23" y2="16"></line>
+                    </svg>
+                </button>
+            </header>
+            
+            <!-- 聊天訊息區 -->
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h2>歡迎使用 AI Chat Studio</h2>
+                    <p>開始一段新對話，或從側邊欄選擇常用 Prompt</p>
+                    <div class="quick-prompts">
+                        <button class="quick-prompt-btn" data-prompt="請用簡單的方式解釋">簡單解釋</button>
+                        <button class="quick-prompt-btn" data-prompt="請幫我翻譯以下內容成英文：">翻譯成英文</button>
+                        <button class="quick-prompt-btn" data-prompt="請幫我寫一段程式碼：">寫程式</button>
+                        <button class="quick-prompt-btn" data-prompt="請幫我總結以下內容：">總結內容</button>
+                    </div>
+                </div>
+                <div class="messages" id="messages">
+                    <!-- 動態生成訊息 -->
+                </div>
+            </div>
+            
+            <!-- 輸入區域 -->
+            <div class="input-area">
+                <div class="system-prompt-bar" id="systemPromptBar">
+                    <span class="system-prompt-label">系統提示：</span>
+                    <span class="system-prompt-text" id="systemPromptText">未設定</span>
+                    <button class="btn-icon-small" id="editSystemPrompt" title="編輯系統提示">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-icon-small" id="clearSystemPrompt" title="清除系統提示">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="輸入訊息... (Shift + Enter 換行)"
+                        rows="1"
+                    ></textarea>
+                    <button class="btn-send" id="sendBtn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                    <button class="btn-stop hidden" id="stopBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 設定 Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>設定</h2>
+                <button class="btn-icon" id="closeSettings">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="apiKeyInput">OpenAI API Key</label>
+                    <div class="api-key-input-wrapper">
+                        <input type="password" id="apiKeyInput" placeholder="sk-...">
+                        <button class="btn-icon-small" id="toggleApiKey" title="顯示/隱藏">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eyeIcon">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="setting-hint">您的 API Key 僅儲存在本地瀏覽器中</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="apiBaseInput">API Base URL (選填)</label>
+                    <input type="text" id="apiBaseInput" placeholder="https://api.openai.com/v1">
+                    <p class="setting-hint">如使用自訂端點或代理服務，請填入完整 URL</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label>預設模型</label>
+                    <select id="defaultModelSelect">
+                        <option value="gpt-5.1">GPT-5.1</option>
+                        <option value="gpt-5-mini">GPT-5 Mini</option>
+                        <option value="gpt-5">GPT-5</option>
+                        <option value="gpt-4.1">GPT-4.1</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="o1-preview">o1-preview</option>
+                        <option value="o1-mini">o1-mini</option>
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="streamToggle" checked>
+                        啟用串流輸出
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelSettings">取消</button>
+                <button class="btn-primary" id="saveSettings">儲存設定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 參數調整 Modal -->
+    <div class="modal" id="paramModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>參數設定</h2>
+                <button class="btn-icon" id="closeParam">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- GPT-5.1 專屬參數區塊 -->
+                <div class="gpt5-params" id="gpt5ParamsSection">
+                    <h4 class="param-section-title">GPT-5.1 專屬參數</h4>
+                    
+                    <div class="param-group">
+                        <label>Reasoning Effort (推理深度)</label>
+                        <select id="reasoningEffortSelect">
+                            <option value="none">None - 不進行額外推理</option>
+                            <option value="low">Low - 輕度推理</option>
+                            <option value="medium" selected>Medium - 中度推理</option>
+                            <option value="high">High - 深度推理</option>
+                        </select>
+                        <p class="setting-hint">控制模型的推理深度，越高思考越深入但回應較慢</p>
+                    </div>
+                    
+                    <div class="param-group">
+                        <label>Verbosity (詳細程度)</label>
+                        <select id="verbositySelect">
+                            <option value="low">Low - 簡潔扼要</option>
+                            <option value="medium" selected>Medium - 適中詳細</option>
+                            <option value="high">High - 詳盡完整</option>
+                        </select>
+                        <p class="setting-hint">控制輸出的詳細程度</p>
+                    </div>
+                    
+                    <div class="param-group">
+                        <label>語氣風格</label>
+                        <select id="toneSelect">
+                            <option value="default">通用 (Default)</option>
+                            <option value="friendly">親切 (Friendly)</option>
+                            <option value="efficient">簡潔 (Efficient)</option>
+                            <option value="nerdy">熱情求知 (Nerdy)</option>
+                            <option value="cynical">冷嘲熱諷 (Cynical)</option>
+                            <option value="professional">專業 (Professional)</option>
+                            <option value="candid">直率 (Candid)</option>
+                            <option value="quirky">創意 (Quirky)</option>
+                        </select>
+                        <p class="setting-hint">選擇 AI 回應的語氣風格</p>
+                    </div>
+                </div>
+                
+                <h4 class="param-section-title">通用參數</h4>
+                
+                <div class="param-group">
+                    <label>
+                        Temperature: <span id="tempValue">0.7</span>
+                    </label>
+                    <input type="range" id="temperatureSlider" min="0" max="2" step="0.1" value="0.7">
+                    <p class="setting-hint">控制回應的隨機性 (0=確定性, 2=最隨機)。GPT-5.1 建議 0.3-0.7</p>
+                </div>
+                
+                <div class="param-group">
+                    <label>
+                        Top P: <span id="topPValue">1</span>
+                    </label>
+                    <input type="range" id="topPSlider" min="0" max="1" step="0.05" value="1">
+                    <p class="setting-hint">核取樣機率閾值</p>
+                </div>
+                
+                <div class="param-group">
+                    <label>
+                        Max Tokens: <span id="maxTokensValue">4096</span>
+                    </label>
+                    <input type="range" id="maxTokensSlider" min="256" max="128000" step="256" value="4096">
+                    <p class="setting-hint">最大輸出 Token 數量 (GPT-5.1 Pro 支援最高 128K)</p>
+                </div>
+                
+                <div class="param-group">
+                    <label>
+                        Presence Penalty: <span id="presenceValue">0</span>
+                    </label>
+                    <input type="range" id="presenceSlider" min="-2" max="2" step="0.1" value="0">
+                    <p class="setting-hint">降低重複已出現主題的機率</p>
+                </div>
+                
+                <div class="param-group">
+                    <label>
+                        Frequency Penalty: <span id="frequencyValue">0</span>
+                    </label>
+                    <input type="range" id="frequencySlider" min="-2" max="2" step="0.1" value="0">
+                    <p class="setting-hint">根據出現頻率降低重複的機率</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="resetParams">重設預設值</button>
+                <button class="btn-primary" id="applyParams">套用</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增/編輯 Prompt Modal -->
+    <div class="modal" id="promptModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="promptModalTitle">新增常用 Prompt</h2>
+                <button class="btn-icon" id="closePromptModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="promptNameInput">名稱</label>
+                    <input type="text" id="promptNameInput" placeholder="例如：翻譯助手">
+                </div>
+                <div class="setting-group">
+                    <label for="promptContentInput">Prompt 內容</label>
+                    <textarea id="promptContentInput" rows="6" placeholder="輸入您的 Prompt..."></textarea>
+                </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="promptAsSystem">
+                        設為系統提示 (System Prompt)
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelPrompt">取消</button>
+                <button class="btn-danger hidden" id="deletePrompt">刪除</button>
+                <button class="btn-primary" id="savePrompt">儲存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 系統提示 Modal -->
+    <div class="modal" id="systemPromptModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>編輯系統提示</h2>
+                <button class="btn-icon" id="closeSystemPromptModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="systemPromptInput">系統提示內容</label>
+                    <textarea id="systemPromptInput" rows="8" placeholder="輸入系統提示，定義 AI 的角色和行為..."></textarea>
+                    <p class="setting-hint">系統提示會影響 AI 的回應風格和行為</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancelSystemPrompt">取消</button>
+                <button class="btn-primary" id="saveSystemPrompt">套用</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast 通知 -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
