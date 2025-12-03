@@ -1366,9 +1366,20 @@ function initEventListeners() {
     });
     
     DOM.messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
+        // 偵測是否為行動裝置
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (e.key === 'Enter') {
+            if (isMobile) {
+                // 行動裝置：Enter 只換行，不送出（需按送出按鈕）
+                // 不需要 preventDefault，讓 Enter 正常換行
+                console.log('[Input] 行動裝置 - Enter 換行');
+            } else if (!e.shiftKey) {
+                // 桌面版：Enter 送出，Shift+Enter 換行
+                e.preventDefault();
+                handleSend();
+                console.log('[Input] 桌面版 - Enter 送出');
+            }
         }
     });
     
