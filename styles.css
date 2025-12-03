@@ -1062,6 +1062,25 @@ body {
     flex: 1;
 }
 
+/* 版本資訊 */
+.version-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.version-info span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary-400);
+    font-weight: 500;
+}
+
 /* 參數區塊標題 */
 .param-section-title {
     font-size: 0.8125rem;
